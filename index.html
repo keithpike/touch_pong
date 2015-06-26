@@ -1,8 +1,16 @@
 <html>
 <head>
   <title>Pong!</title>
-  <script type="application/javascript" src="./game.js"></script>
+  <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no">
+  <link rel="stylesheet" type="text/css" href="./pong.css">
 </head>
 <body>
+  <div class='wrapper'>
+    <canvas id='pongCanvas'></canvas>
+  </div>
+  <script type="application/javascript" src="./requestNextAnimationFrame.js"></script>
+  <script type="application/javascript" src="./gameEngine.js"></script>
+  <script type="application/javascript" src="./twoDimensionalRenderer.js"></script>
+  <script type="application/javascript" src="./pong.js"></script>
 </body>
 </html>

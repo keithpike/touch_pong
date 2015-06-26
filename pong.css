@@ -1,0 +1,14 @@
+body, html {
+	margin: 0 0 0 0;
+	overflow: hidden;
+}
+
+.wrapper {
+	overflow-y: hidden;
+	overflow-x: hidden;
+	width: 100%;
+}
+
+canvas {
+	display: block;
+}
