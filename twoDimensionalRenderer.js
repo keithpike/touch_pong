@@ -59,7 +59,6 @@
   };
 
   twoDimensionalRenderer.prototype.handleResize = function() {
-    // console.log(this);
     this.clear();
     this.setDrawingWidthToViewportSize();
     this.setDrawingHeightToViewportSize();
@@ -67,12 +66,10 @@
 
   twoDimensionalRenderer.prototype.setDrawingWidthToViewportSize = function() {
     this.context.canvas.setAttribute('width', determineViewportWidth());
-    // console.log("viewport width: " + determineViewportWidth());
   };
 
   twoDimensionalRenderer.prototype.setDrawingHeightToViewportSize = function() {
     this.context.canvas.setAttribute('height', determineViewportHeight());
-    // console.log("viewport height: " + determineViewportHeight());
   };
 
   twoDimensionalRenderer.prototype.clear = function() {
@@ -81,27 +78,6 @@
 
   twoDimensionalRenderer.prototype.draw = function(callback) {
     callback.call(callback, this.context);
-    // var text = "Viewport Width: " + determineViewportWidth().toString() + 
-    //            " Viewport Height: " + determineViewportHeight().toString();
-    // // var width = this.context.canvas.width;
-    // // var height = this.context.canvas.height;
-    // this.context.fillStyle = 'rgba(255,0,0,1)';
-    // this.context.beginPath();
-    // this.context.rect(0, 0, this.context.canvas.width, this.context.canvas.height);
-    // this.context.stroke();
-    // this.context.fill();
-    // this.context.fillStyle = 'rgba(0, 0, 0, 1)';
-    // this.context.font = '16px Verdana';
-    // this.context.fillText(text, 15, 15);
-    // text = text = "Display Width: " + determineDisplayWidth().toString() +
-    //               " Display Height: " + determineDisplayHeight().toString();
-    // this.context.fillText(text, 15, 40);
-    // text = text = "Display Available Width: " + determineAvailableDisplayWidth().toString() +
-    //               " Display Available Height: " + determineAvailableDisplayHeight().toString();
-    // this.context.fillText(text, 15, 65);
-    // text = text = "Document Width: " + determineDocumentWidth().toString() +
-    //               " Document Height: " + determineDocumentHeight().toString();
-    // this.context.fillText(text, 15, 90);
   };
 
 })(this); //private namespace

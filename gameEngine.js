@@ -25,7 +25,7 @@
     this.clearCanvas();
     this.paint();
     this.updateAnimatedTime(time);
-    console.log(this.fps);
+    // console.log(this.fps);
     root.requestNextAnimationFrame(function(time) { 
       self.animate.call(self, time);
     });
