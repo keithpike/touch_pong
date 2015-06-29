@@ -19,4 +19,4 @@
       }, self.timeout);
     };
   })(); // root.requestNextAnimationFrame
-})(this); // private namespace
+})(this);

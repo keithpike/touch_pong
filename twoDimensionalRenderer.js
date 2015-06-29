@@ -80,4 +80,4 @@
     callback.call(callback, this.context);
   };
 
-})(this); //private namespace
+})(this);

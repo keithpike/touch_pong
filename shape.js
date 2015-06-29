@@ -81,7 +81,20 @@
            maxX - minX,
            maxY - minY
           ];
-  } // Polygon.prototype.boundingBox
+  }; // Polygon.prototype.boundingBox
+
+  Polygon.prototype.center = function() {
+    var sumX = 0;
+    var sumY = 0;
+    var numPoints = this.points.length;
+    var point;
+    for (var i = 0; i < numPoints; i++) {
+      point = this.points[i];
+      sumX += point.x;
+      sumY += point.y;
+    }
+    return [sumX / numPoints, sumY / numPoints];
+  };
 
   var Circle = root.Circle = function(x, y, radius) {
     Shape.call(this);
