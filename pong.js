@@ -2,11 +2,64 @@
   var pong = root.Pong = (root.Pong || {});
   var game = pong.game = new Game('pong', 'pongCanvas');
   var renderer = pong.renderer = new root.twoDimensionalRenderer(pong.game.context);
+  var activeTouches = {};
+
+  var canvas = document.getElementById('pongCanvas');
+  canvas.addEventListener('touchstart', handleTouchStart);
+  canvas.addEventListener('touchmove', handleTouchMove);
+  canvas.addEventListener('touchend', handleTouchEnd);
   pong.shapes = [];
   pong.scores = [0, 0];
   pong.fontSize = 10;
   pong.started = false;
   pong.awesomeVelocityRatio = .5;
+
+
+
+  function handleTouchStart(event) {
+    event.preventDefault();
+    var myFinger;
+    // console.log(event.changedTouches);
+    for (var i = 0; i < event.changedTouches.length; i++) {
+      // console.log(event.changedTouches[i].identifier);
+      myFinger = new Circle(event.changedTouches[i].pageX, event.changedTouches[i].pageY, 20)
+      activeTouches[event.changedTouches[i].identifier] = { pageX: event.changedTouches[i].pageX, pageY: event.changedTouches[i].pageY, finger: myFinger, timeStarted: game.gameTime };
+      pong.shapes.push(myFinger);
+    }
+  }
+
+  function handleTouchMove(event) {
+    event.preventDefault();
+    var paddle;
+    
+    // console.log(activeTouches[event.touches[0].identifier]);
+    for(var i = 0; i < event.touches.length; i++) {
+      activeTouches[event.touches[i].identifier].finger.move(event.touches[i].pageX - activeTouches[event.touches[i].identifier].pageX, event.touches[i].pageY - activeTouches[event.touches[i].identifier].pageY)
+      paddle = pong.checkWithinPaddle(activeTouches[event.touches[i].identifier].pageX,
+                                      activeTouches[event.touches[i].identifier].pageY);
+      if (paddle) {
+        pong.movePaddle(paddle, event.touches[i].pageY - activeTouches[event.touches[i].identifier].pageY);
+      }
+      activeTouches[event.touches[i].identifier].pageX = event.touches[i].pageX;
+      activeTouches[event.touches[i].identifier].pageY = event.touches[i].pageY;
+    }
+  }
+
+  function handleTouchEnd(event) {
+    event.preventDefault();
+    var numChangedTouches = event.changedTouches.length;
+    var time = game.gameTime;
+    for(var i = 0; i < numChangedTouches; i++) {
+      var id = event.changedTouches[i].identifier;
+      // console.log('deleted' + activeTouches[id].identifier);
+
+      if (activeTouches[id].timeStarted >= time - 200) {
+        pong.hulkSmash(time);
+      }
+      delete activeTouches[id];
+      pong.shapes.pop();
+    }
+  }
 
   pong.setup = function(context) {
     var canvasWidth = context.canvas.width;
@@ -95,6 +148,11 @@
     return height * this.awesomeVelocityRatio * Math.sin(Math.PI * (1 - 2 * Math.random()));
   };
 
+  pong.drawCircle = function(posX, posY, radius) {
+    var myFinger = new Circle(posX, posY, radius);
+    this.shapes.push(myFinger);
+  };
+
   pong.draw = function(context) {
     var height = context.canvas.height;
     var width = context.canvas.width;
@@ -107,6 +165,14 @@
     var shapeCount = this.shapes.length;
     for (var i = 0; i < shapeCount; i++) {
       this.shapes[i].draw(context);
+    }
+  };
+
+  // talk about a way to show my current collision detection is sorely lacking
+  pong.hulkSmash = function(time) {
+    if (this.ball.paddleCollisionTime >= time - 200) {
+      this.ball.velocityX *= 1.1; 
+      this.ball.velocityY *= 1.1;
     }
   };
 
@@ -162,6 +228,35 @@
     );
   }; // pong.drawScores
 
+  pong.movePaddle = function(paddle, dy) {
+    var boundingBox = paddle.boundingBox();
+    var bottom = boundingBox[1] + boundingBox[3];
+    var top = boundingBox[1];
+    if (dy < 0) {
+      dy = Math.max(this.game.context.canvas.height * .2 - top + 5, dy);
+    } else {
+      dy = Math.min(dy, this.game.context.canvas.height - bottom - 5)
+    }
+    console.log(dy);
+    paddle.move(0, dy);
+  };
+
+  pong.checkWithinPaddle = function(documentX, documentY) {
+    var playerOnePaddleBoundingBox = this.playerOnePaddle.boundingBox();
+    if (documentX < playerOnePaddleBoundingBox[0] + playerOnePaddleBoundingBox[2] &&
+        documentX > playerOnePaddleBoundingBox[0] &&
+        documentY < playerOnePaddleBoundingBox[1] + playerOnePaddleBoundingBox[3] &&
+        documentY > playerOnePaddleBoundingBox[1]) {
+      return this.playerOnePaddle;
+    }
+    var playerTwoPaddleBoundingBox = this.playerTwoPaddle.boundingBox();
+    if (documentX < playerTwoPaddleBoundingBox[0] + playerTwoPaddleBoundingBox[2] &&
+        documentX > playerTwoPaddleBoundingBox[0] &&
+        documentY < playerTwoPaddleBoundingBox[1] + playerTwoPaddleBoundingBox[3] &&
+        documentY > playerTwoPaddleBoundingBox[1]) {
+      return this.playerTwoPaddle;
+    }
+  };
 
   // Width of score can run off canvas
   pong.setDynamicFontSize = function(context) {
