@@ -75,12 +75,12 @@
       maxY = Math.max(maxY, point.y);
    }
 
-   return [
-           minX,
-           minY,
-           maxX - minX,
-           maxY - minY
-          ];
+   return {
+           left: minX,
+           top: minY,
+           width: maxX - minX,
+           height: maxY - minY
+          };
   }; // Polygon.prototype.boundingBox
 
   Polygon.prototype.center = function() {
@@ -115,12 +115,12 @@
   };
 
   Circle.prototype.boundingBox = function () {
-   return [
-            this.centerPoint.x - this.radius,
-            this.centerPoint.y - this.radius,
-            this.radius * 2,
-            this.radius * 2
-          ];
+   return {
+            left: this.centerPoint.x - this.radius,
+            top: this.centerPoint.y - this.radius,
+            width: this.radius * 2,
+            height: this.radius * 2
+          };
 };
 
 })(this);

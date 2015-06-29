@@ -302,8 +302,8 @@
 
   pong.movePaddle = function(paddle, dy) {
     var boundingBox = paddle.boundingBox();
-    var paddleBottom = boundingBox[1] + boundingBox[3];
-    var paddleTop = boundingBox[1];
+    var paddleBottom = boundingBox.top + boundingBox.height;
+    var paddleTop = boundingBox.top;
     if (dy < 0) {
       dy = Math.max(this.playAreaTop - paddleTop, dy);
     } else {
@@ -314,17 +314,17 @@
 
   pong.checkWithinPaddle = function(documentX, documentY) {
     var playerOnePaddleBoundingBox = this.playerOnePaddle.boundingBox();
-    if (documentX < playerOnePaddleBoundingBox[0] + playerOnePaddleBoundingBox[2] + this.fingerLeeway &&
-        documentX > playerOnePaddleBoundingBox[0] - this.fingerLeeway &&
-        documentY < playerOnePaddleBoundingBox[1] + playerOnePaddleBoundingBox[3] &&
-        documentY > playerOnePaddleBoundingBox[1]) {
+    if (documentX < playerOnePaddleBoundingBox.left + playerOnePaddleBoundingBox.width + this.fingerLeeway &&
+        documentX > playerOnePaddleBoundingBox.left - this.fingerLeeway &&
+        documentY < playerOnePaddleBoundingBox.top + playerOnePaddleBoundingBox.height &&
+        documentY > playerOnePaddleBoundingBox.top) {
       return this.playerOnePaddle;
     }
     var playerTwoPaddleBoundingBox = this.playerTwoPaddle.boundingBox();
-    if (documentX < playerTwoPaddleBoundingBox[0] + playerTwoPaddleBoundingBox[2] + this.fingerLeeway &&
-        documentX > playerTwoPaddleBoundingBox[0] - this.fingerLeeway &&
-        documentY < playerTwoPaddleBoundingBox[1] + playerTwoPaddleBoundingBox[3] &&
-        documentY > playerTwoPaddleBoundingBox[1]) {
+    if (documentX < playerTwoPaddleBoundingBox.left + playerTwoPaddleBoundingBox.width + this.fingerLeeway &&
+        documentX > playerTwoPaddleBoundingBox.left - this.fingerLeeway &&
+        documentY < playerTwoPaddleBoundingBox.top + playerTwoPaddleBoundingBox.height &&
+        documentY > playerTwoPaddleBoundingBox.top) {
       return this.playerTwoPaddle;
     }
   }; // pong.checkWithinPaddle
@@ -371,19 +371,10 @@
 
   pong.paddleCollisionCheck = function(boundingBox1, boundingBox2) {
       // ax < bx + bw, ay < by + bh, bx < ax + aw, by < ay + ah
-      var x1 = boundingBox1[0];
-      var y1 = boundingBox1[1];
-      var width1 = boundingBox1[2];
-      var height1 = boundingBox1[3];
-      var x2 = boundingBox2[0];
-      var y2 = boundingBox2[1];
-      var width2 = boundingBox2[2];
-      var height2 = boundingBox2[3];
-
-      return x1 < x2 + width2 &&
-             y1 < y2 + height2 &&
-             x2 < x1 + width1 &&
-             y2 < y1 + height1;
+      return boundingBox1.left < boundingBox2.left + boundingBox2.width &&
+             boundingBox1.top < boundingBox2.top + boundingBox2.height &&
+             boundingBox2.left < boundingBox1.left + boundingBox1.width &&
+             boundingBox2.top < boundingBox1.top + boundingBox1.height;
   };
 
   game.gameUpdates = function() {
@@ -398,7 +389,7 @@
 
     if (pong.paddleCollisionCheck(paddleBoundingBox, ballBoundingBox)) {
       // ball center y - paddle highest y / paddle height - .5 give a range of -.5 thru .5
-      var paddleHitAngle = (pong.ball.centerPoint.y - paddleBoundingBox[1]) / paddleBoundingBox[3] - .5;
+      var paddleHitAngle = (pong.ball.centerPoint.y - paddleBoundingBox.top) / paddleBoundingBox.height - .5;
       pong.ball.paddleCollisionTime = this.gameTime;
       pong.ball.velocityY = pong.canvasHeight * pong.awesomeVelocityRatio * Math.sin(Math.PI * .5 * paddleHitAngle);
       pong.ball.velocityX *= -1;
