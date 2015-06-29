@@ -47,6 +47,42 @@
     context.closePath();
   };
 
+  Polygon.prototype.move = function(dx, dy) {
+    var tempPoint;
+    var numPoints = this.points.length;
+    for (i = 0; i < numPoints; i++) {
+      tempPoint = this.points[i];
+      tempPoint.x += dx;
+      tempPoint.y += dy;
+    }
+  };
+
+  Polygon.prototype.boundingBox = function() {
+    var numPoints = this.points.length;
+    if (this.points.length === 0) {return;}
+    var minX = this.points[0].x;
+    var minY = this.points[0].y;
+    var maxX = this.points[0].x;
+    var maxY = this.points[0].y;
+    var point;
+
+
+   for (var i = 1; i < numPoints; i++) {
+      point = this.points[i];
+      minX = Math.min(minX, point.x);
+      minY = Math.min(minY, point.y);
+      maxX = Math.max(maxX, point.x);
+      maxY = Math.max(maxY, point.y);
+   }
+
+   return [
+           minX,
+           minY,
+           maxX - minX,
+           maxY - minY
+          ];
+  } // Polygon.prototype.boundingBox
+
   var Circle = root.Circle = function(x, y, radius) {
     Shape.call(this);
     this.radius = radius || 1;
@@ -59,5 +95,19 @@
     context.beginPath();
     context.arc(this.centerPoint.x, this.centerPoint.y, this.radius, 0, Math.PI * 2, false);
   };
+
+  Circle.prototype.move = function(dx, dy) {
+    this.centerPoint.x += dx;
+    this.centerPoint.y += dy;
+  };
+
+  Circle.prototype.boundingBox = function () {
+   return [
+            this.centerPoint.x - this.radius,
+            this.centerPoint.y - this.radius,
+            this.radius * 2,
+            this.radius * 2
+          ];
+};
 
 })(this);

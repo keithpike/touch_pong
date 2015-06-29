@@ -23,9 +23,9 @@
     self = this;
     this.updateEngineStats(time);
     this.clearCanvas();
+    this.gameUpdates();
     this.paint();
     this.updateAnimatedTime(time);
-    // console.log(this.fps);
     root.requestNextAnimationFrame(function(time) { 
       self.animate.call(self, time);
     });
@@ -42,6 +42,10 @@
     }
   };
 
+  Game.prototype.FPSBasedVelocity = function(velocity) {
+    return velocity / this.fps;
+  }
+
   Game.prototype.updateGameTime = function(time) {
     this.gameTime = getCurrentTime() - this.gameStartTime;
   };
@@ -53,12 +57,12 @@
   Game.prototype.start = function() {
     var self = this;
 
-    this.startTime = getCurrentTime();
+    this.gameStartTime = getCurrentTime();
     root.requestNextAnimationFrame(function(time) {
       self.animate.call(self, time);
     });
   }; // Game.start
-
+  Game.prototype.gameUpdates = function() {}; // to be overridden by game specific implementation
   Game.prototype.clearCanvas = function() {}; // to be overridden by game specific implementation
   Game.prototype.paint = function() {}; // to be overridden by game specific implementation
 })(this); // private namespace

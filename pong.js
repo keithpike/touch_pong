@@ -6,22 +6,32 @@
   pong.scores = [0, 0];
   pong.fontSize = 10;
   pong.started = false;
+  pong.awesomeVelocityRatio = .5;
 
   pong.setup = function(context) {
-    this.ball = new Circle(context.canvas.width / 2, context.canvas.height * .6, 20);
+    var canvasWidth = context.canvas.width;
+    var canvasHeight = context.canvas.height;
+    this.ball = new Circle(canvasWidth / 2, canvasHeight * .6, 20);
+    
     this.playerOnePaddle = new Polygon();
     this.playerTwoPaddle = new Polygon();
+    this.setupPaddle(this.playerOnePaddle, true, context);
+    this.setupPaddle(this.playerTwoPaddle, false, context);
+
     this.topWall = new Polygon();
     this.bottomWall = new Polygon();
     this.setupWall(this.topWall, true, context);
     this.setupWall(this.bottomWall, false, context);
-    this.setupPaddle(this.playerOnePaddle, true, context);
-    this.setupPaddle(this.playerTwoPaddle, false, context);
+    
     this.shapes.push(pong.ball);
     this.shapes.push(pong.playerOnePaddle);
     this.shapes.push(pong.playerTwoPaddle);
     this.shapes.push(this.topWall);
     this.shapes.push(this.bottomWall);
+
+    this.ball.velocityX = canvasWidth * pong.awesomeVelocityRatio;
+    this.ball.velocityY = pong.getStartingYVelocity(canvasHeight);
+    this.ball.paddleCollisionTime = -1;
   }; // pong.setup
 
   pong.setupWall = function(wall, isTop, context) {
@@ -46,6 +56,11 @@
     this.bottomWall.removePoints();
     this.setupWall(this.topWall, true, context);
     this.setupWall(this.bottomWall, false, context);
+
+    // stretch paddles as necessary
+    // relocate paddles
+    // relocate ball
+    // modify ball's velocity to match new playarea
   };
 
   pong.setupPaddle = function(paddle, playerOne, context) {
@@ -63,6 +78,22 @@
     paddle.addPoint(startX + paddleWidth, startY + paddleHeight);
     paddle.addPoint(startX, startY + paddleHeight);
   }; // pong.setupPaddle
+
+  pong.resetBall = function(isPlayerOne, context) {
+    this.ball.centerPoint.x = context.canvas.width * .5;
+    this.ball.centerPoint.y = context.canvas.height * .6;
+    if (isPlayerOne) {
+      this.ball.velocityX = context.canvas.width * this.awesomeVelocityRatio;
+      this.ball.velocityY = this.getStartingYVelocity(context.canvas.height);
+    } else {
+      this.ball.velocityX = context.canvas.width * this.awesomeVelocityRatio * -1;
+      this.ball.velocityY = this.getStartingYVelocity(context.canvas.height);
+    }
+  }
+
+  pong.getStartingYVelocity = function(height) {
+    return height * this.awesomeVelocityRatio * Math.sin(Math.PI * (1 - 2 * Math.random()));
+  };
 
   pong.draw = function(context) {
     var height = context.canvas.height;
@@ -158,7 +189,50 @@
     return context.measureText('W').width * 7 / 6;
   };
 
+  pong.checkBallBounds = function(context) {
+    var playableAreaTop = context.canvas.height * .2 + 5; // 5 is topWall thickness change later
+    var playableAreaBottom = context.canvas.height - 5; // 5 is bottomWall thickness change later
+    if (0 >= this.ball.centerPoint.x - this.ball.radius) {
+      this.scores[1]++;
+      this.resetBall(false, context);
+    } else if (context.canvas.width <= this.ball.centerPoint.x + this.ball.radius) {
+      this.scores[0]++;
+      this.resetBall(true, context);
+    } else if (playableAreaTop >= this.ball.centerPoint.y - this.ball.radius && this.ball.velocityY < 0) {
+      this.ball.velocityY *= -1;
+    } else if (playableAreaBottom <= this.ball.centerPoint.y + this.ball.radius && this.ball.velocityY > 0) {
+      this.ball.velocityY *= -1;
+    }
+  };
+
+  pong.paddleCollisionCheck = function(boundingBox1, boundingBox2) {
+              // ax < bx + bw, ay < by + bh, bx < ax + aw, by < ay + ah
+      return boundingBox1[0] < boundingBox2[0] + boundingBox2[2] &&
+             boundingBox1[1] < boundingBox2[1] + boundingBox2[3] &&
+             boundingBox2[0] < boundingBox1[0] + boundingBox1[2] &&
+             boundingBox2[1] < boundingBox1[1] + boundingBox1[3];
+  };
+
+  game.gameUpdates = function() {
+    var paddleBoundingBox = pong.ball.velocityX > 0 ? pong.playerTwoPaddle.boundingBox() : pong.playerOnePaddle.boundingBox();
+    var ballBoundingBox = pong.ball.boundingBox();
+    pong.checkBallBounds(this.context);
+    pong.ball.move(
+        this.FPSBasedVelocity(pong.ball.velocityX),
+        this.FPSBasedVelocity(pong.ball.velocityY)
+    );
+    if (pong.paddleCollisionCheck(paddleBoundingBox, ballBoundingBox)) {
+      pong.ball.paddleCollisionTime = this.gameTime;
+      // ball center y - paddle highest y / paddle height - .5 give a range of -.5 - .5
+      var paddleHitAngle = (pong.ball.centerPoint.y - paddleBoundingBox[1]) / paddleBoundingBox[3] - .5;
+      pong.ball.velocityY = this.context.canvas.height * pong.awesomeVelocityRatio * Math.sin(Math.PI * .5 * paddleHitAngle);
+      pong.ball.velocityX *= -1;
+    }
+    
+  };
+
   game.paint = function() { return renderer.draw(pong.draw); };
+
   game.clearCanvas = renderer.clear.bind(renderer);
   
   root.onload = function() {
@@ -174,6 +248,7 @@
     pong.setDynamicFontSize(pong.game.context);
     pong.translatePlayableArea(initialWidth, initialHeight, pong.game.context);
   };
+
   game.start();
 })(this); // private namespace
 
